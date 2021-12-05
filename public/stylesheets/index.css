@@ -6,3 +6,9 @@
 #login-form button {
   width: 130px;
 }
+#toast-container {
+  padding-top: 30px;
+}
+#toast-container .toast-message {
+  font-size: 18px;
+}
