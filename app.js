@@ -13,14 +13,15 @@ app.use(cookieParser())
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: false }))
 
-let errorTokens = []
+let errorLogins = []
 
 app.get('/', (req, res) => {
   const { id } = req.cookies
-  console.log(errorTokens)
-  if (errorTokens.includes(id)) {
-    errorTokens = errorTokens.filter(t => t !== id)
-    res.render('index', { hasError: true })
+  const errorLogin = errorLogins.find(item => item.id === id)
+  
+  if (errorLogin) {
+    errorLogins = errorLogins.filter(item => item.id !== id)
+    res.render('index', { hasError: true, email: errorLogin.email })
   } else {
     res.render('index')
   }
@@ -35,9 +36,9 @@ app.post('/login', (req, res) => {
   if (user) {
     res.render('success', { user })
   } else {
-    const token = uuidV1()
-    errorTokens.push(token)
-    res.cookie('id', token).redirect('/')
+    const id = uuidV1()
+    errorLogins.push({ id, email })
+    res.cookie('id', id).redirect('/')
   }
 })
 
