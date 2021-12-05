@@ -1,0 +1,8 @@
+#login-form {
+  width: 400px;
+  margin: 200px auto 0;
+  text-align: center;
+}
+#login-form button {
+  width: 130px;
+}
