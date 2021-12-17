@@ -13,32 +13,43 @@ app.use(cookieParser())
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: false }))
 
+let userTokens = []
 let errorLogins = []
 
 app.get('/', (req, res) => {
-  const { id } = req.cookies
-  const errorLogin = errorLogins.find(item => item.id === id)
+  const { errorId, token } = req.cookies
   
+  const errorLogin = errorLogins.find(item => item.errorId === errorId)
   if (errorLogin) {
-    errorLogins = errorLogins.filter(item => item.id !== id)
-    res.render('index', { hasError: true, email: errorLogin.email })
-  } else {
-    res.render('index')
+    errorLogins = errorLogins.filter(item => item.errorId !== errorId)
+    res.clearCookie('errorId')
+    return res.render('index', { hasError: true, email: errorLogin.email })
   }
+  
+  const userToken = userTokens.find(item => item.token === token) 
+  if (userToken) {
+    const user = users.find(user => user.email === userToken.email)
+    return res.render('success', { user })
+  }
+  
+  return res.render('index')
 })
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body
   
-  const user = users.find((user) => {
+  const user = users.find(user => {
     return user.email === email && user.password === password
   })
   if (user) {
-    res.render('success', { user })
+    const token = uuidV1()
+    userTokens.push({ token, email })
+    res.cookie('token', token)
+    return res.render('success', { user })
   } else {
-    const id = uuidV1()
-    errorLogins.push({ id, email })
-    res.cookie('id', id).redirect('/')
+    const errorId = uuidV1()
+    errorLogins.push({ errorId, email })
+    return res.cookie('errorId', errorId).redirect('/')
   }
 })
 
